@@ -8,6 +8,7 @@
     import T from "../../helpers/T.svelte"
     import InputRow from "../../input/InputRow.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
+    import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
 
     onMount(() => {
@@ -189,6 +190,15 @@
 <MaterialToggleSwitch label="settings.log_song_usage" checked={$special.logSongUsage || false} defaultValue={false} on:change={(e) => updateSpecial(e.detail, "logSongUsage")} />
 
 <MaterialToggleSwitch label="settings.auto_error_reporting" checked={autoErrorReporting} defaultValue={true} on:change={toggleAutoErrorReporting} />
+
+<InputRow style="margin-top: 10px; margin-bottom: 10px;">
+    <div style="flex: 1; padding-right: 15px;">
+        <p>OpenAI API Key (for AI features)</p>
+    </div>
+    <div style="flex: 2;">
+        <MaterialTextInput label="" value={$special.openAiApiKey || ""} on:change={(e) => updateSpecial(e.detail, "openAiApiKey")} type="password" />
+    </div>
+</InputRow>
 
 <MaterialToggleSwitch label="settings.disable_hardware_acceleration" checked={disableHardwareAcceleration} defaultValue={false} on:change={toggleHardwareAcceleration} />
 <!-- "optimized_mode": "Optimized mode", -->

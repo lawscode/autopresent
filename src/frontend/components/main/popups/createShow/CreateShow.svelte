@@ -8,6 +8,7 @@
     import { clone, sortObject } from "../../../helpers/array"
     import { history } from "../../../helpers/history"
     import { checkName } from "../../../helpers/show"
+    import { generateSlidesFromText } from "../../../../utils/aiGenerator"
     import T from "../../../helpers/T.svelte"
     import List from "../../../input/List.svelte"
     import MaterialButton from "../../../inputs/MaterialButton.svelte"
@@ -65,11 +66,13 @@
         { id: "text", name: translateText("create_show.quick_lyrics"), title: translateText("create_show.quick_lyrics_tip [Enter]"), icon: "text" },
         // { id: "clipboard", name: "clipboard", icon: "clipboard" },
         { id: "web", name: translateText("create_show.web"), title: translateText("create_show.search_web [Ctrl+F]"), icon: "search" },
+        { id: "ai", name: "AI Generate", title: "Generate slides from text using AI", icon: "autofill" },
         { id: "empty", name: translateText("create_show.empty"), title: translateText("new.empty_show [Ctrl+Enter]"), icon: "add" }
     ]
     $: resolvedCreateOptions = clone(createOptions).map((a: any) => {
         if (a.id === "text") a.colored = values.text.length
         if (a.id === "web") a.disabled = !values.name?.trim()
+        if (a.id === "ai") a.disabled = false
 
         if (a.id === "empty") {
             if (values.text.length) {
@@ -130,6 +133,32 @@
     // CREATE
 
     let showMore = false
+    let isGeneratingAi = false
+
+    async function generateAiShows() {
+        if (!values.text.trim()) return
+        isGeneratingAi = true
+        try {
+            const show = await generateSlidesFromText(values.text, values.name || "AI Generated")
+            if (!show) return
+            
+            // Apply category if selected
+            let category = selectedCategory?.id?.length ? selectedCategory.id : null
+            if (category) show.category = category
+            show.name = checkName(show.name)
+
+            const selectedIndex = $activeShow?.index === undefined ? undefined : $activeShow.index + 1
+            history({ id: "UPDATE", newData: { data: show, remember: { project: $activeProject, index: selectedIndex } }, location: { page: "show", id: "show" } })
+            
+            values = { name: "", text: "", origin: "" }
+            quickTextCache.set({ name: "", text: "" })
+            activePopup.set(null)
+        } catch (e: any) {
+            newToast(e.message || "Failed to generate AI slides")
+        } finally {
+            isGeneratingAi = false
+        }
+    }
 
     function textToShow() {
         let text = values.text
@@ -234,4 +263,10 @@
     </MaterialButton>
 {:else if selectedOption === "web"}
     <WebSearch query={values.name} on:update={updateLyrics} />
+{:else if selectedOption === "ai"}
+    <MaterialTextarea label="Source Text / Transcript" placeholder="Paste your text here..." value={values.text} autofocus rows={8} on:input={(e) => changeValue(e)} />
+
+    <MaterialButton on:click={generateAiShows} variant="contained" title="Generate AI Slides" disabled={isGeneratingAi || values.text.trim().length === 0} style="width: 100%;margin-top: 20px;" icon="autofill">
+        {isGeneratingAi ? "Generating..." : "Generate with AI"}
+    </MaterialButton>
 {/if}

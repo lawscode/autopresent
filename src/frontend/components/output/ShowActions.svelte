@@ -3,6 +3,7 @@
     import type { LayoutRef } from "../../../types/Show"
     import { activeEdit, activePage, activePopup, activeShow, outLocked, popupData, showsCache } from "../../stores"
     import { previewShortcuts } from "../../utils/shortcuts"
+    import { voiceAutoAdvanceEnabled } from "../../audio/speechAdvancer"
     import Icon from "../helpers/Icon.svelte"
     import { refreshOut, setOutput } from "../helpers/output"
     import { getLayoutRef } from "../helpers/show"
@@ -104,6 +105,9 @@
 
     <MaterialButton title={($outLocked ? "preview._unlock" : "preview._lock") + " [Ctrl+L]"} on:click={() => outLocked.set(!$outLocked)} red={$outLocked}>
         <Icon id={$outLocked ? "locked" : "unlocked"} size={1.1} white={$outLocked} />
+    </MaterialButton>
+    <MaterialButton title="Voice Auto-Advance" on:click={() => voiceAutoAdvanceEnabled.update(v => !v)} red={$voiceAutoAdvanceEnabled}>
+        <Icon id="microphone" size={1.2} white={$voiceAutoAdvanceEnabled} />
     </MaterialButton>
     <MaterialButton
         title="popup.transition"
